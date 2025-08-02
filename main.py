@@ -1,5 +1,6 @@
 from tkinter import * # Import tkinter
 import random # Import random
+import os # Add this import for file operations
 
 GAME_WIDTH = 1000
 GAME_HEIGHT = 700
@@ -9,6 +10,7 @@ BODY_PARTS = 3
 SNAKE_COLOR = "#00FF00"
 FOOD_COLOR = "#FF0000"
 BACKGROUND_COLOR = "#000000"
+HIGHSCORE_FILE = "highscore.txt" # Add this constant
 
 class Snake:
     
@@ -95,8 +97,29 @@ def check_collisions(snake):
     for body_part in snake.coordinates[1:]:
         if x == body_part[0] and y == body_part[1]:
             return True
-    
+
+def load_highscore():
+    if os.path.exists(HIGHSCORE_FILE):
+        try:
+            with open(HIGHSCORE_FILE, 'r') as file:
+                return int(file.read().strip())
+        except:
+            return 0
+    return 0
+
+def save_highscore(highscore):
+    with open(HIGHSCORE_FILE, 'w') as file:
+        file.write(str(highscore))
+
+def update_highscore():
+    global highscore
+    if score > highscore:
+        highscore = score
+        highscore_label.config(text="High Score: {}".format(highscore))
+        save_highscore(highscore)
+
 def game_over():
+    update_highscore() # Add this line
     canvas.delete(ALL)
     canvas.create_text(canvas.winfo_width()/2, canvas.winfo_height()/2, font=('consolas', 70), text="GAME OVER", fill="red", tag="gameover")
 
@@ -106,9 +129,13 @@ window.resizable(False, False)
 
 score = 0
 direction = "down"
+highscore = load_highscore() # Add this line
 
 label = Label(window, text="Score:{}".format(score), font=("consolas", 40))
 label.pack()
+
+highscore_label = Label(window, text="High Score: {}".format(highscore), font=("consolas", 30)) # Add this line
+highscore_label.pack() # Add this line
 
 canvas = Canvas(window, bg=BACKGROUND_COLOR, height=GAME_HEIGHT, width=GAME_WIDTH)
 canvas.pack()
